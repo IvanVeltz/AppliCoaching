@@ -53,3 +53,14 @@ create policy "athlète lit ses séances" on sessions
   for select using (
     athlete_id in (select id from athletes where user_id = auth.uid())
   );
+
+create function claim_athlete() returns void
+language sql security definer set search_path = public as $$
+  update athletes
+  set user_id = auth.uid()
+  where user_id is null
+    and lower(email) = lower(auth.jwt() ->> 'email');
+$$;
+
+revoke execute on function claim_athlete() from public, anon;
+grant execute on function claim_athlete() to authenticated;

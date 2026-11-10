@@ -44,7 +44,7 @@ export default function Athletes() {
   return (
     <section>
       <h2>Mes athlètes</h2>
-      <form onSubmit={addAthlete}>
+      <form className="form-grid" onSubmit={addAthlete}>
         <input
           placeholder="Prénom de l'athlète"
           value={name}
@@ -53,15 +53,18 @@ export default function Athletes() {
         />
         <input type="email" placeholder="E-mail de l'athlète" value={email}
             onChange={(e) => setEmail(e.target.value)} required />
-        <button>Ajouter</button>
+        <button className="full">Ajouter</button>
       </form>
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
-      <ul>
+      {error && <p className="error">{error}</p>}
+      <ul className="list">
         {athletes.map((a) => (
-          <li key={a.id}>
-            {a.name}{' '}{a.email}
-            <button onClick={() => removeAthlete(a.id)}>Supprimer</button>
-          </li>
+          <li key={a.id} className="card row">
+            <div>
+            <strong>{a.name}</strong>
+            <div className="muted">{a.email}</div>
+            </div>
+            <button className="ghost" onClick={() => removeAthlete(a.id)}>Supprimer</button>
+        </li>
         ))}
       </ul>
       {athletes.length === 0 && <p>Aucun athlète pour l'instant.</p>}

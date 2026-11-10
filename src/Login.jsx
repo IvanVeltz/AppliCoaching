@@ -17,14 +17,14 @@ export default function Login() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className='card login' onSubmit={handleSubmit}>
       <h1>Connexion</h1>
       <input type="email" placeholder="E-mail" value={email}
              onChange={(e) => setEmail(e.target.value)} required />
       <input type="password" placeholder="Mot de passe" value={password}
              onChange={(e) => setPassword(e.target.value)} required />
       <button disabled={loading}>{loading ? '…' : 'Se connecter'}</button>
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && <p className='error'>{error}</p>}
     </form>
   )
 }

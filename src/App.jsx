@@ -9,6 +9,7 @@ export default function App() {
   const [session, setSession] = useState(null)
   const [ready, setReady] = useState(false)
   const [role, setRole] = useState(null)
+  const [displayName, setDisplayName] = useState(null)   // avec les autres états
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -28,20 +29,28 @@ export default function App() {
     async function detectRole() {
       await supabase.rpc('claim_athlete')
       const { data } = await supabase
-        .from('athletes').select('id').eq('user_id', userId).maybeSingle()
+        .from('athletes').select('id, name').eq('user_id', userId).maybeSingle()
       setRole(data ? 'athlete' : 'coach')
+      setDisplayName(data?.name ?? null)
     }
     detectRole()
   }, [userId])
 
   if (!ready) return <p>Chargement…</p>
-  if (!session) return <Login />
+  if (!session) return <div className="container"><Login /></div>
   if (!role) return <p>Chargement…</p>
 
   return (
-    <div>
-      <p>Connecté : {session.user.email}</p>
-      <button onClick={() => supabase.auth.signOut()}>Se déconnecter</button>
+    <div className="container">
+      <header className="topbar">
+        <h1>🏃 Coach Running</h1>
+        <button className="ghost" onClick={() => supabase.auth.signOut()}>
+          Déconnexion
+        </button>
+      </header>
+      <p className="muted">
+        {displayName ?? session.user.user_metadata?.name ?? session.user.email}
+      </p>
       {role === 'coach' ? (
         <>
           <Athletes />

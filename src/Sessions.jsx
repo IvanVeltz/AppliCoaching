@@ -55,7 +55,7 @@ export default function Sessions() {
   return (
     <section>
       <h2>Séances</h2>
-      <form onSubmit={addSession}>
+      <form className="card form-grid" onSubmit={addSession}>
         <select value={form.athlete_id} onChange={update('athlete_id')} required>
           <option value="">— athlète —</option>
           {athletes.map((a) => (
@@ -74,12 +74,12 @@ export default function Sessions() {
                value={form.title} onChange={update('title')} required />
         <textarea placeholder="Détails : échauffement, allure, récup…"
                   value={form.details} onChange={update('details')} />
-        <button>Envoyer la séance</button>
+        <button className="full">Envoyer la séance</button>
       </form>
 
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && <p className="error">{error}</p>}
 
-      <ul>
+      <ul className="list">
         {sessions.map((s) => (
           <li key={s.id}>
             <strong>{s.date}</strong> · {s.athletes?.name} · {TYPES[s.type]}

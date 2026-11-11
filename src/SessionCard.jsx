@@ -5,6 +5,9 @@ export default function SessionCard({ session: s, showAthlete, onDelete }) {
   const isToday = s.date === today()
 
   return (
+    // Le composant SessionCard affiche les détails d'une session d'entraînement.
+    // Il prend en entrée un objet session, un booléen showAthlete pour déterminer si le nom de l'athlète doit être affiché,
+    // et une fonction onDelete pour gérer la suppression de la session.
     <li className={`session ${isToday ? 'session--today' : ''}`}>
       <div className="session__date">
         <span>{weekday}</span>

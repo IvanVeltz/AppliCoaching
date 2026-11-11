@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
 import { TYPES, today } from './constants'
+import WeekView from './WeekView'
 
 export default function Sessions() {
   const [athletes, setAthletes] = useState([])
@@ -79,18 +80,7 @@ export default function Sessions() {
 
       {error && <p className="error">{error}</p>}
 
-      <ul className="list">
-        {sessions.map((s) => (
-          <li key={s.id}>
-            <strong>{s.date}</strong> · {s.athletes?.name} · {TYPES[s.type]}
-            {s.distance_km && ` · ${s.distance_km} km`}
-            <br />
-            {s.title}
-            {s.details && <div style={{ whiteSpace: 'pre-wrap' }}>{s.details}</div>}
-            <button onClick={() => removeSession(s.id)}>Supprimer</button>
-          </li>
-        ))}
-      </ul>
+      <WeekView sessions={sessions} showAthlete onDelete={removeSession} />
     </section>
   )
 }

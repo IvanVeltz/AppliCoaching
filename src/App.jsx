@@ -20,6 +20,10 @@ export default function App() {
   const [displayName, setDisplayName] = useState(null)   // avec les autres états
   // true si on arrive depuis un lien d'invitation ou de réinitialisation
   const [choosingPassword, setChoosingPassword] = useState(arrivedViaLink)
+  // vrai si c'est un athlète qui n'a pas encore choisi son mot de passe
+  const [mustChange, setMustChange] = useState(false)
+  // La liste des athlètes du coach, partagée entre Athletes et Sessions
+  const [athletes, setAthletes] = useState([])
 
   // Ce bloc tourne une seule fois au chargement de l'application pour récupérer la session de connexion
   useEffect(() => {
@@ -49,6 +53,7 @@ export default function App() {
     if (!userId) {
       setRole(null)
       setDisplayName(null)
+      setAthletes([])
       return
     }
     async function detectRole() {
@@ -57,21 +62,35 @@ export default function App() {
       // Cherche une fiche athlète lié à ce compte.
       // maybeSingle() : renvoi la ligne si elle existe, sinon null (au lieu d'une erreur)
       const { data } = await supabase
-        .from('athletes').select('id, name').eq('user_id', userId).maybeSingle()
+        .from('athletes').select('id, name, password_set').eq('user_id', userId).maybeSingle()
       // Une fiche trouvée = c'est un athlète, sinon c'est un coach
       setRole(data ? 'athlete' : 'coach')
       // On garde le nom de l'athlète pour l'afficher dans l'interface
       setDisplayName(data?.name ?? null)
+      setMustChange(!!data && !data.password_set)   // fiche trouvée mais mot de passe pas encore choisi
     }
     detectRole()
   }, [userId])
+
+  // Le coach charge sa liste d'athlètes une fois, dès que son rôle est connu
+  useEffect(() => {
+    if (role !== 'coach') return
+    supabase.from('athletes').select('*').order('name')
+      .then(({ data }) => setAthletes(data ?? []))
+  }, [role])
 
   // Dans l'ordre : on attend que la session soit chargée,
   if (!ready) return <p>Chargement…</p>
   // puis on attend que l'utilisateur se connecte,
   if (!session) return <div className="container"><Login /></div>
   // puis on attend que l'utilisateur choisisse son mot de passe si nécessaire
-  if (choosingPassword) return <div className="container"><SetPassword onDone={() => setChoosingPassword(false)} /></div>
+  if (choosingPassword || mustChange) {
+    return (
+      <div className="container">
+        <SetPassword onDone={() => { setChoosingPassword(false); setMustChange(false) }} />
+      </div>
+    )
+  }
   // puis on attend que le rôle soit déterminé.
   if (!role) return <p>Chargement…</p>
 
@@ -80,7 +99,7 @@ export default function App() {
     <div className="container">
       {/* Barre du haut : titre et bouton de déconnexion */}
       <header className="topbar">
-        <h1>🏃 Coach Running</h1>
+        <h1>🏃 After Coach</h1>
         <button className="ghost" onClick={() => supabase.auth.signOut()}>
           Déconnexion
         </button>
@@ -93,8 +112,8 @@ export default function App() {
       {/* Le coach voit la gestion des athlètes et des séances ; l'athlète voit les siennes */}
       {role === 'coach' ? (
         <>
-          <Athletes />
-          <Sessions />
+          <Athletes athletes={athletes} setAthletes={setAthletes} />
+          <Sessions athletes={athletes} />
         </>
       ) : (
         <AthleteView />

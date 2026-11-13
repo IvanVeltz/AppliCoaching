@@ -7,7 +7,7 @@ export default function AthleteView() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    supabase.from('sessions').select('*').order('date')
+    supabase.from('sessions').select('*, athletes(paces)').order('date')
       .then(({ data, error }) => {
         if (error) setError(error.message)
         else setSessions(data)

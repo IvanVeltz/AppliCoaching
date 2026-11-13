@@ -16,6 +16,7 @@ export default function SetPassword({ onDone }) {
       setError(error.message)
       setLoading(false)
     } else {
+      await supabase.rpc('mark_password_set') // note dans la base que c'est fait
       onDone() // on repasse à l'application normale
     }
   }

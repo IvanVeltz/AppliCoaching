@@ -3,7 +3,7 @@
   --card: #ffffff;
   --text: #1b1f1a;
   --muted: #6b7268;
-  --accent: #e8590c;
+  --accent: #e5383b;
   --accent-text: #ffffff;
   --border: #e1e4dd;
   --danger: #c92a2a;
@@ -15,7 +15,7 @@
     --card: #1f221d;
     --text: #eef0ea;
     --muted: #9aa294;
-    --accent: #ff8a4c;
+    --accent: #ff6b6b;
     --accent-text: #1b1f1a;
     --border: #2f332c;
     --danger: #ff6b6b;
@@ -148,3 +148,25 @@ button.ghost {
 .weeknav__title { display: grid; justify-items: center; text-align: center; }
 .weeknav button { font-size: 1.2rem; padding: 6px 14px; }
 .weeknav__today { margin-bottom: 12px; width: 100%; }
+
+.paces { margin-top: 12px; }
+.paces label { display: grid; gap: 2px; }
+
+.blocks { display: grid; gap: 8px; margin: 4px 0; }
+.block { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px;
+         border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+.block input, .block select { width: auto; }
+.block .num { width: 76px; }
+.session__blocks { margin: 6px 0 0; padding-left: 18px; font-size: 0.9rem; }
+
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; }
+.chip {
+  flex: none;                       /* les boutons ne se compriment pas, la barre défile */
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 6px 14px;
+  font-weight: 400;
+}
+.chip--on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }

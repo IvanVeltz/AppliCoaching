@@ -64,3 +64,25 @@ $$;
 
 revoke execute on function claim_athlete() from public, anon;
 grant execute on function claim_athlete() to authenticated;
+
+-- Vrai quand l'athlète a choisi son propre mot de passe
+alter table athletes add column password_set boolean not null default false;
+
+-- L'athlète n'a pas le droit de modifier la table : cette fonction le fait pour lui,
+-- uniquement sur sa propre fiche
+create function mark_password_set() returns void
+language sql security definer set search_path = public as $$
+  update athletes set password_set = true where user_id = auth.uid();
+$$;
+
+revoke execute on function mark_password_set() from public, anon;
+grant execute on function mark_password_set() to authenticated;
+
+-- Optionnel : les athlètes déjà liés à un compte (tes tests) ne seront pas forcés
+update athletes set password_set = true where user_id is not null;
+
+-- Les allures de l'athlète, en secondes par km : {"ef": 360, "seuil": 270, ...}
+alter table athletes add column paces jsonb not null default '{}'::jsonb;
+
+-- Les blocs d'une séance (on s'en servira à l'étape suivante)
+alter table sessions add column blocks jsonb not null default '[]'::jsonb;

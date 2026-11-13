@@ -1,4 +1,5 @@
 import { TYPES, today, dateParts } from './constants'
+import { describeBlocks } from './paces'
 
 export default function SessionCard({ session: s, showAthlete, onDelete }) {
   const { weekday, day, month } = dateParts(s.date)
@@ -22,6 +23,11 @@ export default function SessionCard({ session: s, showAthlete, onDelete }) {
           {showAthlete && <span className="muted">{s.athletes?.name}</span>}
         </div>
         <div className="session__title">{s.title}</div>
+                {s.blocks?.length > 0 && (
+          <ul className="session__blocks">
+            {describeBlocks(s.blocks, s.athletes?.paces).map((line, i) => <li key={i}>{line}</li>)}
+          </ul>
+        )}
         {s.details && <p className="session__details">{s.details}</p>}
       </div>
 

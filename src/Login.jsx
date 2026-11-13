@@ -38,9 +38,9 @@ export default function Login() {
       <input type="password" placeholder="Mot de passe" value={password}
              onChange={(e) => setPassword(e.target.value)} required />
       <button disabled={loading}>{loading ? '…' : 'Se connecter'}</button>
-      <button type="button" className="ghost" onClick={forgotPassword}>
+      {/* <button type="button" className="ghost" onClick={forgotPassword}>
         Mot de passe oublié ?
-      </button>
+      </button> */}
       {error && <p className='error'>{error}</p>}
     </form>
   )

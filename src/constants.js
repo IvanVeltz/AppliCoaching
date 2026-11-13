@@ -9,6 +9,11 @@ export const TYPES = {
   course: 'Course',
 }
 
+// Mode de saisie selon le type de séance :
+// 'simple' = durée seule ; 'choice' = au choix 100 % EF ou blocs ; 'blocks' = éditeur complet
+const SESSION_MODE = { footing: 'simple', sortie_longue: 'choice' }
+export const modeOf = (type) => SESSION_MODE[type] ?? 'blocks'
+
 // Date du jour en heure locale, au format YYYY-MM-DD
 export const today = () => new Date().toLocaleDateString('sv-SE')
 

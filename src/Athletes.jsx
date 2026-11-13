@@ -1,30 +1,17 @@
 // useEffect() : permet de lancer un code au chargement du composant, ou quand une variable change
 // useState() : permet de mémoriser une valeur, et de relancer le rendu quand elle change
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 // Le client Supabase est initialisé dans supabaseClient.js
 import { supabase } from './supabaseClient'
+import AthletePaces from './AthletePaces'
 
-export default function Athletes() {
-  // La liste des athlètes
-  const [athletes, setAthletes] = useState([])
+export default function Athletes({ athletes, setAthletes }) {
   // Les champs du formulaire d'ajout d'athlète
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   // Le message d'erreur à afficher (null = pas d'erreur)
   const [error, setError] = useState(null)
-
-  // Ce bloc tourne une seule fois au chargement du composant pour récupérer la liste des athlètes
-  useEffect(() => {
-    supabase
-      .from('athletes') // la table à interroger
-      .select('*') // on veut toutes les colonnes
-      .order('name') // on trie par nom
-      .then(({ data, error }) => {
-        // Si une erreur survient, on l'affiche ; sinon on met à jour la liste des athlètes
-        if (error) setError(error.message)
-        else setAthletes(data)
-      })
-  }, [])
+  const [openId, setOpenId] = useState(null)   // athlète dont le panneau des allures est ouvert
 
   // Cette fonction est appelée quand on soumet le formulaire d'ajout d'athlète
   async function addAthlete(e) {
@@ -73,13 +60,28 @@ export default function Athletes() {
       {error && <p className="error">{error}</p>}
       <ul className="list">
         {athletes.map((a) => (
-          <li key={a.id} className="card row">
-            <div>
-            <strong>{a.name}</strong>
-            <div className="muted">{a.email}</div>
+          <li key={a.id} className="card">
+            <div className="row">
+              <div>
+                <strong>{a.name}</strong>
+                <div className="muted">{a.email}</div>
+              </div>
+              <div className="row">
+                <button className="ghost" onClick={() => setOpenId(openId === a.id ? null : a.id)}>
+                  Allures
+                </button>
+                <button className="ghost" onClick={() => removeAthlete(a.id)}>Supprimer</button>
+              </div>
             </div>
-            <button className="ghost" onClick={() => removeAthlete(a.id)}>Supprimer</button>
-        </li>
+            {openId === a.id && (
+              <AthletePaces
+                athlete={a}
+                onSaved={(id, paces) =>
+                  setAthletes(athletes.map((x) => (x.id === id ? { ...x, paces } : x)))
+                }
+              />
+            )}
+          </li>
         ))}
       </ul>
       {athletes.length === 0 && <p>Aucun athlète pour l'instant.</p>}

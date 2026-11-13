@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from './supabaseClient'
 import { TYPES, today, modeOf } from './constants'
 import WeekView from './WeekView'
@@ -19,6 +19,8 @@ export default function Sessions({ athletes }) {
   })
   // 'all' = tous les athlètes ; sinon l'id de l'athlète sélectionné
   const [selectedId, setSelectedId] = useState(null)
+  const [editingId, setEditingId] = useState(null)   // id de la séance en cours de modification, sinon null
+  const formRef = useRef(null)                        // pour faire défiler la page jusqu'au formulaire
 
   // Chargement des séances, une seule fois
   useEffect(() => {
@@ -48,23 +50,62 @@ export default function Sessions({ athletes }) {
     return (e) => setForm({ ...form, [field]: e.target.value })
   }
 
-  async function addSession(e) {
-    e.preventDefault()
-    setError(null)
-    const { error } = await supabase.from('sessions').insert({
-      ...form,
-      // Titre automatique pour une séance EF sans titre : "EF 45 min"
-      title: form.title.trim() || (isSimple ? `${autoName} ${minutes} min` : ''),
-      // Avec des blocs d'effort, les km viennent du calcul ; sinon de la saisie manuelle
-      distance_km: hasWork ? calc.km : (form.distance_km === '' ? null : Number(form.distance_km)),
-      blocks: hasWork ? form.blocks : [],
-    })
+  // Formulaire vide, sur l'athlète donné
+function blankForm(athleteId) {
+  return { athlete_id: athleteId, date: today(), type: 'footing',
+           distance_km: '', title: '', details: '', blocks: [efBlock()] }
+}
+
+// Charge une séance existante dans le formulaire
+function startEdit(s) {
+  setEditingId(s.id)
+  setForm({
+    athlete_id: s.athlete_id,
+    date: s.date,
+    type: s.type,
+    distance_km: s.distance_km ?? '',
+    // Un titre automatique ("EF 45 min") est vidé, pour être recalculé si tu changes la durée
+    title: /^(EF|Sortie longue) [\d.]+ min$/.test(s.title) ? '' : s.title,
+    details: s.details ?? '',
+    blocks: s.blocks?.length ? s.blocks : startBlocks(s.type),
+  })
+  formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function cancelEdit() {
+  setEditingId(null)
+  setForm(blankForm(form.athlete_id))
+}
+
+// Crée une séance, ou enregistre les modifications si on est en train d'en modifier une
+async function saveSession(e) {
+  e.preventDefault()
+  setError(null)
+  const row = {
+    ...form,
+    title: form.title.trim() || (isSimple ? `${autoName} ${minutes} min` : ''),
+    distance_km: hasWork ? calc.km : (form.distance_km === '' ? null : Number(form.distance_km)),
+    blocks: hasWork ? form.blocks : [],
+  }
+  if (editingId) {
+    // .select('id') permet de savoir si une ligne a vraiment été modifiée :
+    // la sécurité de la base refuse parfois sans renvoyer d'erreur
+    const { data, error } = await supabase
+      .from('sessions').update(row).eq('id', editingId).select('id')
+    if (error) return setError(error.message)
+    if (!data?.length) return setError('Modification refusée ou séance introuvable.')
+    setEditingId(null)
+    setForm(blankForm(form.athlete_id))
+  } else {
+    const { error } = await supabase.from('sessions').insert(row)
     if (error) return setError(error.message)
     setForm({ ...form, title: '', details: '', distance_km: '', blocks: startBlocks(form.type) })
-    loadSessions()
   }
+  loadSessions()
+}
 
   async function removeSession(id) {
+    if (id === editingId) cancelEdit()
     const { error } = await supabase.from('sessions').delete().eq('id', id)
     if (error) setError(error.message)
     else setSessions(sessions.filter((s) => s.id !== id))
@@ -116,7 +157,7 @@ export default function Sessions({ athletes }) {
   // Changer d'athlète change aussi celui du formulaire
   function pick(id) {
     setSelectedId(id)
-    if (id !== 'all') setForm((f) => ({ ...f, athlete_id: id }))
+    if (id !== 'all' && !editingId) setForm((f) => ({ ...f, athlete_id: id }))
   }
 
   return (
@@ -137,7 +178,13 @@ export default function Sessions({ athletes }) {
         </button>
       </div>
 
-      <form className="card form-grid" onSubmit={addSession}>
+            <form ref={formRef} className="card form-grid" onSubmit={saveSession}>
+        {editingId && (
+          <p className="full">
+            <strong>Modification d'une séance</strong>{' '}
+            <span className="muted">— les km seront recalculés avec les allures actuelles.</span>
+          </p>
+        )}
         <select value={form.athlete_id} onChange={update('athlete_id')} required>
           <option value="">— athlète —</option>
           {athletes.map((a) => (
@@ -192,12 +239,15 @@ export default function Sessions({ athletes }) {
         </div>
         <textarea className="full" placeholder="Détails : échauffement, allure, récup…"
                   value={form.details} onChange={update('details')} />
-        <button className="full">Envoyer la séance</button>
+        <button className="full">{editingId ? 'Enregistrer les modifications' : 'Envoyer la séance'}</button>
+        {editingId && (
+          <button type="button" className="ghost full" onClick={cancelEdit}>Annuler</button>
+        )}
       </form>
 
       {error && <p className="error">{error}</p>}
 
-      <WeekView sessions={visible} showAthlete={current === 'all'} onDelete={removeSession} />
+      <WeekView sessions={visible} showAthlete={current === 'all'} onDelete={removeSession} onEdit={startEdit} />
     </section>
   )
 }

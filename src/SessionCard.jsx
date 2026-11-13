@@ -1,7 +1,7 @@
 import { TYPES, today, dateParts } from './constants'
 import { describeBlocks } from './paces'
 
-export default function SessionCard({ session: s, showAthlete, onDelete }) {
+export default function SessionCard({ session: s, showAthlete, onDelete, onEdit }) {
   const { weekday, day, month } = dateParts(s.date)
   const isToday = s.date === today()
 
@@ -37,6 +37,9 @@ export default function SessionCard({ session: s, showAthlete, onDelete }) {
             <strong>{s.distance_km}</strong>
             <span>km</span>
           </div>
+        )}
+        {onEdit && (
+          <button className="ghost" onClick={() => onEdit(s)}>Modifier</button>
         )}
         {onDelete && (
           <button className="ghost" onClick={() => onDelete(s.id)}>

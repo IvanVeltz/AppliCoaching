@@ -3,7 +3,7 @@ import { today, mondayOf, weekLabel, addDays } from './constants'
 import SessionCard from './SessionCard'
 
 // Affiche UNE semaine à la fois, avec des boutons pour changer de semaine
-export default function WeekView({ sessions, showAthlete, onDelete }) {
+export default function WeekView({ sessions, showAthlete, onDelete, onEdit }) {
   // Le lundi de la semaine affichée ; au départ, la semaine en cours
   const thisWeek = mondayOf(today())
   const [monday, setMonday] = useState(thisWeek)
@@ -42,10 +42,11 @@ export default function WeekView({ sessions, showAthlete, onDelete }) {
 
       <ul className="list">
         {weekSessions.map((s) => (
-          <SessionCard key={s.id} session={s} showAthlete={showAthlete} onDelete={onDelete} />
+          <SessionCard key={s.id} session={s} showAthlete={showAthlete} onDelete={onDelete} onEdit={onEdit} />
         ))}
       </ul>
       {weekSessions.length === 0 && <p className="muted">Aucune séance cette semaine.</p>}
     </section>
   )
 }
+

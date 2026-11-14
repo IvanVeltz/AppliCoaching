@@ -170,3 +170,22 @@ button.ghost {
   font-weight: 400;
 }
 .chip--on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+
+/* Carte de séance : disposition par zones, identique sur ordinateur et téléphone */
+.session {
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "date body km"
+    "details details details"
+    "actions actions actions";
+  gap: 0 12px;
+}
+.session__date    { grid-area: date; }
+.session__body    { grid-area: body; min-width: 0; }
+.session__km      { grid-area: km; }
+.session__details { grid-area: details; margin: 8px 0 0; overflow-wrap: anywhere; }
+.session__actions { grid-area: actions; display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+
+/* Lignes de liste (athlètes) : elles passent à la ligne au lieu de déborder */
+.row { flex-wrap: wrap; }
+.row > div:first-child { flex: 1 1 180px; min-width: 0; overflow-wrap: anywhere; }

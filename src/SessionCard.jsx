@@ -5,10 +5,7 @@ export default function SessionCard({ session: s, showAthlete, onDelete, onEdit 
   const { weekday, day, month } = dateParts(s.date)
   const isToday = s.date === today()
 
-  return (
-    // Le composant SessionCard affiche les détails d'une session d'entraînement.
-    // Il prend en entrée un objet session, un booléen showAthlete pour déterminer si le nom de l'athlète doit être affiché,
-    // et une fonction onDelete pour gérer la suppression de la session.
+    return (
     <li className={`session ${isToday ? 'session--today' : ''}`}>
       <div className="session__date">
         <span>{weekday}</span>
@@ -23,30 +20,29 @@ export default function SessionCard({ session: s, showAthlete, onDelete, onEdit 
           {showAthlete && <span className="muted">{s.athletes?.name}</span>}
         </div>
         <div className="session__title">{s.title}</div>
-                {s.blocks?.length > 0 && (
+        {s.blocks?.length > 0 && (
           <ul className="session__blocks">
             {describeBlocks(s.blocks, s.athletes?.paces).map((line, i) => <li key={i}>{line}</li>)}
           </ul>
         )}
-        {s.details && <p className="session__details">{s.details}</p>}
       </div>
 
-      <div className="session__side">
-        {s.distance_km && (
-          <div className="session__km">
-            <strong>{s.distance_km}</strong>
-            <span>km</span>
-          </div>
-        )}
-        {onEdit && (
-          <button className="ghost" onClick={() => onEdit(s)}>Modifier</button>
-        )}
-        {onDelete && (
-          <button className="ghost" onClick={() => onDelete(s.id)}>
-            Supprimer
-          </button>
-        )}
-      </div>
+      {s.distance_km > 0 && (
+        <div className="session__km">
+          <strong>{s.distance_km}</strong>
+          <span>km</span>
+        </div>
+      )}
+
+      {/* La description sort de la colonne du milieu : elle occupe toute la largeur */}
+      {s.details && <p className="session__details">{s.details}</p>}
+
+      {(onEdit || onDelete) && (
+        <div className="session__actions">
+          {onEdit && <button className="ghost" onClick={() => onEdit(s)}>Modifier</button>}
+          {onDelete && <button className="ghost" onClick={() => onDelete(s.id)}>Supprimer</button>}
+        </div>
+      )}
     </li>
   )
 }
